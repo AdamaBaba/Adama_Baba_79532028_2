@@ -1,0 +1,338 @@
+Adama Baba
+79532028
+Cohort B
+
+MariaDB [(none)]> select @@hostname;
++------------+
+| @@hostname |
++------------+
+| Adama      |
++------------+
+1 row in set (0.001 sec)
+
+MariaDB [(none)]> create database ProjectSchema;
+Query OK, 1 row affected (0.033 sec)
+
+MariaDB [(none)]> use ProjectSchema;
+Database changed
+
+
+MariaDB [ProjectSchema]> CREATE TABLE Department (deptNo VARCHAR(10) NOT NULL PRIMARY KEY, deptName VARCHAR(50) NOT NULL, mgrEmpNo VARCHAR(10));
+
+                  
+MariaDB [ProjectSchema]> CREATE TABLE Employee (
+    ->     empNo VARCHAR(10) NOT NULL PRIMARY KEY,
+    ->
+    ->     fName VARCHAR(30) NOT NULL,
+    ->
+    ->     lName VARCHAR(30) NOT NULL,
+    ->
+    ->     address VARCHAR(100),
+    ->
+    ->     DOB DATE,
+    ->
+    ->     sex CHAR(1) NOT NULL CHECK (sex IN ('M', 'F')),
+    ->
+    ->     position VARCHAR(20) NOT NULL CHECK (position IN (
+    ->
+    ->                   'Manager', 'Team Leader',
+    ->
+    ->                   'Analyst', 'Software Developer')),
+    ->
+    ->     deptNo VARCHAR(10) NOT NULL,
+    ->
+    -> FOREIGN KEY (deptNo) REFERENCES Department(deptNo)
+    ->
+    ->      ON DELETE CASCADE ON UPDATE CASCADE
+    ->
+    -> );
+Query OK, 0 rows affected (0.040 sec)
+
+
+MariaDB [ProjectSchema]> ALTER TABLE Department
+    ->     ADD FOREIGN KEY (mgrEmpNo)
+    ->         REFERENCES Employee(empNo)
+    ->         ON DELETE SET NULL ON UPDATE CASCADE;
+Query OK, 0 rows affected (0.068 sec)
+Records: 0  Duplicates: 0  Warnings: 0
+
+
+MariaDB [ProjectSchema]> CREATE TABLE Project (
+    ->
+    ->     projNo   VARCHAR(10) NOT NULL PRIMARY KEY,
+    ->
+    ->     projName VARCHAR(50) NOT NULL,
+    ->
+    ->     deptNo   VARCHAR(10),
+    ->
+    -> FOREIGN KEY (deptNo) REFERENCES Department(deptNo)
+    ->
+    ->                  ON DELETE CASCADE ON UPDATE CASCADE
+    ->
+    -> );
+Query OK, 0 rows affected (0.012 sec)
+
+
+MariaDB [ProjectSchema]> CREATE TABLE WorksOn (
+    ->     empNo       VARCHAR(10)  NOT NULL REFERENCES Employee(empNo)
+    ->                     ON DELETE CASCADE ON UPDATE CASCADE,
+    ->     projNo      VARCHAR(10)  NOT NULL REFERENCES Project(projNo)
+    ->                     ON DELETE CASCADE ON UPDATE CASCADE,
+    ->     dateWorked  DATE         NOT NULL,
+    ->     hoursWorked DECIMAL(4,1) NOT NULL CHECK (hoursWorked BETWEEN 0 AND 40),
+    ->     PRIMARY KEY (empNo, projNo, dateWorked)
+    -> );
+Query OK, 0 rows affected (0.042 sec)
+
+
+MariaDB [ProjectSchema]> INSERT INTO Department VALUES
+    ->
+    ->     ('D01', 'IT', NULL),
+    ->
+    ->     ('D02', 'Planning', NULL),
+    ->
+    ->     ('D03', 'Finance',  NULL);
+Query OK, 3 rows affected (0.066 sec)
+Records: 3  Duplicates: 0  Warnings: 0
+
+
+MariaDB [ProjectSchema]> INSERT INTO Employee VALUES
+    ->
+    ->     ('E01', 'Alice',  'Mensah',   '12 Oak St, Accra',   '1985-03-14', 'F', 'Manager', 'D01'),
+    ->
+    ->     ('E02', 'Kwame',  'Asante',   '5 Palm Ave, Tema',   '1990-07-22', 'M', 'Team Leader', 'D01'),
+    ->
+    ->     ('E03', 'Ama',    'Boateng',  '3 Ring Rd, Accra',   '1992-11-05', 'F', 'Software Developer', 'D01'),
+    ->
+    ->     ('E04', 'Kofi',   'Owusu',    '9 Hill Rd, Kumasi',  '1988-01-30', 'M', 'Analyst', 'D01'),
+    ->
+    ->     ('E05', 'Abena',  'Darko',    '20 Link Rd, Accra',  '1993-06-18', 'F', 'Software Developer', 'D01'),
+    ->
+    ->     ('E06', 'Yaw',    'Frimpong', '7 Cedar St, Accra',  '1980-09-12', 'M', 'Manager', 'D02'),
+    ->
+    ->     ('E07', 'Efua',   'Acquah',   '2 West St, Tema',    '1991-04-25', 'F', 'Team Leader', 'D02'),
+    ->
+    ->     ('E08', 'Nana',   'Agyei',    '15 Bay Rd, Accra',   '1995-02-08', 'M', 'Analyst',  'D02'),
+    ->
+    ->     ('E09', 'Akua',   'Bonsu',    '8 North Ave, Accra', '1987-12-01', 'F', 'Manager', 'D03'),
+    ->
+    ->     ('E10', 'Kweku',  'Ampong',   '33 South Rd, Tema',  '1994-08-17', 'M', 'Software Developer', 'D03'),
+    ->
+    ->     ('E11', 'Adwoa',  'Sarpong',  '6 East Ln, Kumasi',  '1996-03-29', 'F', 'Analyst', 'D03'),
+    ->
+    ->     ('E12', 'Kojo',   'Mensah',   '18 Cross Rd, Accra', '1991-05-14', 'M', 'Software Developer', 'D02');
+Query OK, 12 rows affected (0.031 sec)
+Records: 12  Duplicates: 0  Warnings: 0
+
+
+MariaDB [ProjectSchema]> UPDATE Department SET mgrEmpNo = 'E01' WHERE deptNo = 'D01';
+Query OK, 1 row affected (0.041 sec)
+Rows matched: 1  Changed: 1  Warnings: 0
+
+
+MariaDB [ProjectSchema]> UPDATE Department SET mgrEmpNo = 'E06' WHERE deptNo = 'D02';
+Query OK, 1 row affected (0.001 sec)
+Rows matched: 1  Changed: 1  Warnings: 0
+
+
+MariaDB [ProjectSchema]> UPDATE Department SET mgrEmpNo = 'E09' WHERE deptNo = 'D03';
+Query OK, 1 row affected (0.003 sec)
+Rows matched: 1  Changed: 1  Warnings: 0
+
+
+MariaDB [ProjectSchema]> INSERT INTO Project VALUES
+    ->
+    ->     ('P01', 'Network Upgrade', 'D01'),
+    ->
+    ->     ('P02', 'ERP Implementation', 'D02'),
+    ->
+    ->     ('P03', 'Budget System', 'D03'),
+    ->
+    ->     ('P04', 'Data Warehouse', 'D01'),
+    ->
+    ->     ('P05', 'HR Portal',  'D02');
+Query OK, 5 rows affected (0.027 sec)
+Records: 5  Duplicates: 0  Warnings: 0
+
+
+MariaDB [ProjectSchema]> INSERT INTO WorksOn VALUES
+    ->
+    ->     ('E02', 'P01', '2024-01-08', 8.0),
+    ->
+    ->     ('E03', 'P01', '2024-01-08', 6.5),
+    ->
+    ->     ('E04', 'P01', '2024-01-09', 7.0),
+    ->
+    ->     ('E05', 'P04', '2024-01-10', 5.5),
+    ->
+    ->     ('E07', 'P02', '2024-01-08', 8.0),
+    ->
+    ->     ('E08', 'P02', '2024-01-09', 4.0),
+    ->
+    ->     ('E12', 'P05', '2024-01-10', 7.5),
+    ->
+    ->     ('E10', 'P03', '2024-01-08', 6.0),
+    ->
+    ->     ('E11', 'P03', '2024-01-09', 8.0),
+    ->
+    ->     ('E03', 'P04', '2024-01-11', 5.0),
+    ->
+    ->     ('E02', 'P04', '2024-01-12', 7.0),
+    ->
+    ->     ('E08', 'P05', '2024-01-11', 3.5);
+Query OK, 12 rows affected (0.028 sec)
+Records: 12  Duplicates: 0  Warnings: 0
+
+
+Exercise 7.25
+MariaDB [ProjectSchema]> CREATE VIEW FemaleManagerProjects AS
+    -> SELECT p.projNo, p.projName, p.deptNo
+    -> FROM Project p
+    -> JOIN Department d ON p.deptNo = d.deptNo
+    -> JOIN Employee e   ON d.mgrEmpNo = e.empNo
+    -> WHERE e.sex = 'F'
+    -> ORDER BY p.projNo;
+Query OK, 0 rows affected (0.035 sec)
+
+
+Exercise 7.26
+MariaDB [ProjectSchema]> CREATE VIEW EmpDetails AS
+    -> SELECT e.empNo, e.fName, e.lName, p.projName, w.hoursWorked FROM Employee e, Project p, WorksOn w WHERE e.empNo = w.empNo AND p.projNo = w.projNo;
+Query OK, 0 rows affected (0.037 sec)
+
+
+Exercise 7.27
+MariaDB [ProjectSchema]> CREATE VIEW EmpProject (empNo, projNo, totalHours) AS
+    -> SELECT w.empNo, w.projNo, SUM(hoursWorked)
+    -> FROM Employee e, Project p, WorksOn w
+    -> WHERE e.empNo = w.empNo AND p.projNo = w.projNo
+    -> GROUP BY w.empNo, w.projNo;
+Query OK, 0 rows affected (0.012 sec)
+
+
+a)
+MariaDB [ProjectSchema]> SELECT *
+    -> FROM EmpProject;
++-------+--------+------------+
+| empNo | projNo | totalHours |
++-------+--------+------------+
+| E02   | P01    |        8.0 |
+| E02   | P04    |        7.0 |
+| E03   | P01    |        6.5 |
+| E03   | P04    |        5.0 |
+| E04   | P01    |        7.0 |
+| E05   | P04    |        5.5 |
+| E07   | P02    |        8.0 |
+| E08   | P02    |        4.0 |
+| E08   | P05    |        3.5 |
+| E10   | P03    |        6.0 |
+| E11   | P03    |        8.0 |
+| E12   | P05    |        7.5 |
++-------+--------+------------+
+12 rows in set (0.037 sec)
+
+
+MariaDB [ProjectSchema]> INSERT INTO Project VALUES ('SCCS', 'Supply Chain Control System', 'D01');
+Query OK, 1 row affected (0.028 sec)
+
+
+MariaDB [ProjectSchema]> INSERT INTO WorksOn VALUES ('E02', 'SCCS', '2024-01-15', 6.0);
+Query OK, 1 row affected (0.027 sec)
+
+
+MariaDB [ProjectSchema]> INSERT INTO Employee VALUES ('E1', 'James', 'Ofori', '22 North Rd, Accra', '1993-05-10', 'M', 'Analyst', 'D01');
+Query OK, 1 row affected (0.027 sec)
+
+
+MariaDB [ProjectSchema]> INSERT INTO WorksOn VALUES ('E1', 'P01', '2024-01-15', 5.0);
+Query OK, 1 row affected (0.004 sec)
+
+
+MariaDB [ProjectSchema]> INSERT INTO WorksOn VALUES ('E1', 'P02', '2024-01-15', 7.0);
+Query OK, 1 row affected (0.027 sec)
+
+
+b)
+MariaDB [ProjectSchema]> SELECT projNo
+    -> FROM EmpProject
+    -> WHERE projNo = 'SCCS';
++--------+
+| projNo |
++--------+
+| SCCS   |
++--------+
+1 row in set (0.006 sec)
+
+
+c)
+MariaDB [ProjectSchema]> SELECT COUNT(projNo)
+    -> FROM EmpProject
+    -> WHERE empNo = 'E1';
++---------------+
+| COUNT(projNo) |
++---------------+
+|             2 |
++---------------+
+1 row in set (0.002 sec)
+
+
+d)
+MariaDB [ProjectSchema]> SELECT empNo, totalHours
+    -> FROM EmpProject
+    -> GROUP BY empNo;
++-------+------------+
+| empNo | totalHours |
++-------+------------+
+| E02   |        8.0 |
+| E03   |        6.5 |
+| E04   |        7.0 |
+| E05   |        5.5 |
+| E07   |        8.0 |
+| E08   |        4.0 |
+| E1    |        5.0 |
+| E10   |        6.0 |
+| E11   |        8.0 |
+| E12   |        7.5 |
++-------+------------+
+10 rows in set (0.003 sec)
+
+
+Exercise 7.28
+MariaDB [ProjectSchema]> create table Part(partNo VARCHAR(10), contract VARCHAR(15), partCost double, Primary Key(partNo, contract));
+Query OK, 0 rows affected (0.011 sec)
+
+
+MariaDB [ProjectSchema]> INSERT INTO Part VALUES
+    ->     ('PT01', 'CON001', 1500.00),
+    ->     ('PT01', 'CON002',  800.00),  
+    ->     ('PT02', 'CON001', 2000.00),
+    ->     ('PT02', 'CON003',  950.00), 
+    ->     ('PT03', 'CON002', 1200.00),
+    ->     ('PT04', 'CON001',  750.00),  
+    ->     ('PT05', 'CON003', 3000.00),
+    ->     ('PT06', 'CON002',  500.00),  
+    ->     ('PT07', 'CON001', 1800.00),
+    ->     ('PT08', 'CON003',  600.00);
+Query OK, 10 rows affected (0.030 sec)
+Records: 10  Duplicates: 0  Warnings: 0
+
+
+MariaDB [ProjectSchema]> CREATE VIEW ExpensiveParts (partNo)
+    -> AS SELECT DISTINCT partNo
+    ->    FROM Part
+    ->    WHERE partCost > 1000;
+Query OK, 0 rows affected (0.031 sec)
+
+
+Discuss how you would maintain this as a materialized view and under what circumstances you would maintain the view without 
+having to access the underlying base table Part
+
+
+A materialized view is like a snapshot of a query result stored in your database, so anytime you want to access the field like the 
+distinct partNo, you don't have to query select distinct partNo where partCost > 100 all the time, you just call the view and have access 
+to the data. To keep the saved copy accurate, you need to update it whenever the part table changes, which you can do with triggers. 
+The trigger would update the materialized view whenever a row is inserted, deleted, or updated from the part table. You can maintain the 
+view without accessing the base table when inserting or updating a row where the new partCost > 1000, because the new values tells you 
+that the partNo qualifies to be part of the view. However, when a row is deleted or a partCost is updated downward, you would have to go 
+back to the part table because the partNp can appear under multiple contacts, and because one contact was deleted or updated does not mean
+partNo should be removed from the view.
